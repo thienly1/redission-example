@@ -1,4 +1,4 @@
-package java.com.ly.redission.test.config;
+package org.example.redisson.test.config;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
