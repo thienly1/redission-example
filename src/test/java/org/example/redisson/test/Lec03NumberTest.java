@@ -20,8 +20,5 @@ public class Lec03NumberTest extends BaseTest{
                 .then();
         StepVerifier.create(mono)
                 .verifyComplete();
-
-
-
     }
 }
