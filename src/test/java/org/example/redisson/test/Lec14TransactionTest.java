@@ -52,7 +52,7 @@ public class Lec14TransactionTest extends BaseTest{
         RBucketReactive<Long> user2Balance = transaction.getBucket("user:2:balance", LongCodec.INSTANCE);
         this.transfer(user1Balance, user2Balance, 50)
                 .thenReturn(0) //just simulate an error
-                .map(i ->(5/i))  //add any error here to see the process, don't care about it
+                //   .map(i ->(5/i))  //add any error here to see the process, don't care about it
                 .then(transaction.commit())
                 .doOnError(System.out::println)//java.lang.ArithmeticException: / by zero
                 .doOnError(ex -> transaction.rollback())
