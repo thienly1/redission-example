@@ -4,6 +4,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RBucketReactive;
+import org.redisson.api.RTransactionReactive;
+import org.redisson.api.TransactionOptions;
 import org.redisson.client.codec.LongCodec;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,7 +29,7 @@ public class Lec14TransactionTest extends BaseTest{
     @AfterAll
     public void accountBalanceStatus(){
         Mono<Void> mono = Flux.zip(this.user1Balance.get(), this.user2Balance.get()) //[50,50], wrap it in a zip
-                .doOnNext(System.out::println)  //[50,50]
+                .doOnNext(System.out::println)  //nonTransactionTest(), even error in transaction, the transactionTest() still works :[50,50]. With transaction(), we said rollback when got error, so it doesn't work, then we got [100,0]
                 .then();
         StepVerifier.create(mono)
                 .verifyComplete();
@@ -43,6 +45,20 @@ public class Lec14TransactionTest extends BaseTest{
         sleep(1000);
     }
 
+    @Test
+    public void transactionTest(){
+        RTransactionReactive transaction = this.client.createTransaction(TransactionOptions.defaults());
+        RBucketReactive<Long> user1Balance = transaction.getBucket("user:1:balance", LongCodec.INSTANCE);
+        RBucketReactive<Long> user2Balance = transaction.getBucket("user:2:balance", LongCodec.INSTANCE);
+        this.transfer(user1Balance, user2Balance, 50)
+                .thenReturn(0) //just simulate an error
+                .map(i ->(5/i))  //add any error here to see the process, don't care about it
+                .then(transaction.commit())
+                .doOnError(System.out::println)//java.lang.ArithmeticException: / by zero
+                .doOnError(ex -> transaction.rollback())
+                .subscribe();
+        sleep(1000);
+    }
     private Mono<Void> transfer(RBucketReactive<Long> fromAccount, RBucketReactive<Long> toAccount, int amount){
        return Flux.zip(fromAccount.get(), toAccount.get())
                 .filter(t -> t.getT1() >= amount)
