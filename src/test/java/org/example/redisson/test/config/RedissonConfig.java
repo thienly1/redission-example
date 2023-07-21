@@ -13,7 +13,9 @@ public class RedissonConfig {
         if(Objects.isNull(this.redissonClient)){
             Config config =new Config();
             config.useSingleServer()
-                    .setAddress("redis://127.0.0.1:6379");
+                    .setAddress("redis://127.0.0.1:6379")  // default nopass, if you want to use another user from redis, set 2 next steps:
+                    .setPassword("pass123")  //add password
+                    .setUsername("sam");     //add username
             redissonClient = Redisson.create(config);
         }
         return redissonClient;
