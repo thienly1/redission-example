@@ -15,12 +15,12 @@ public class RestaurantUtil {
         ObjectMapper mapper = new ObjectMapper();
         InputStream stream = RestaurantUtil.class.getClassLoader().getResourceAsStream("restaurant.json");
         try {
-            mapper.readValue(stream, new TypeReference<List<Restaurant>>() {
+            return mapper.readValue(stream, new TypeReference<List<Restaurant>>() {
             });
         } catch (IOException e) {
             e.printStackTrace();
         }
         return Collections.emptyList();
-
     }
+
 }
